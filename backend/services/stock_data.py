@@ -42,8 +42,74 @@ class StockDataService:
     def __init__(self):
         os.makedirs(CACHE_DIR, exist_ok=True)
         self._trading_days: List[str] = []
-        # Login baostock on init
-        bs.login()
+        self._bs_login()
+
+    def _bs_login(self):
+        """确保 baostock 登录"""
+        try:
+            bs.login()
+        except:
+            pass
+
+    def preload_stocks(self, start_date: str, end_date: str):
+        """预加载热门股票在指定时间段的K线数据（后台线程）"""
+        import threading
+        def _do_preload():
+            top_stocks = ["600519", "000858", "601318", "600036", "000333",
+                          "300750", "600900", "000001", "601166", "600887"]
+            self._bs_login()
+            for symbol in top_stocks:
+                self._fetch_and_cache_range(symbol, start_date, end_date)
+            # 预加载 benchmark
+            self.get_benchmark(start_date, end_date)
+            # 预加载交易日历
+            self._load_trading_days()
+        threading.Thread(target=_do_preload, daemon=True).start()
+
+    def _fetch_and_cache_range(self, symbol: str, start_date: str, end_date: str):
+        """拉取并缓存指定区间的全部K线"""
+        db = _get_cache_db()
+        # 检查是否已有缓存
+        count = db.execute(
+            "SELECT COUNT(*) FROM kline_cache WHERE symbol=? AND date BETWEEN ? AND ?",
+            (symbol, start_date, end_date)
+        ).fetchone()[0]
+        if count > 10:
+            db.close()
+            return
+        
+        try:
+            bscode = _to_baostock_code(symbol)
+            rs = bs.query_history_k_data_plus(
+                bscode,
+                "date,open,high,low,close,volume,amount,pctChg",
+                start_date=start_date, end_date=end_date,
+                frequency="d", adjustflag="2"
+            )
+            while rs.error_code == '0' and rs.next():
+                r = rs.get_row_data()
+                d = r[0]
+                try:
+                    kline = {
+                        "symbol": symbol, "date": d,
+                        "open": round(float(r[1]), 2),
+                        "close": round(float(r[4]), 2),
+                        "high": round(float(r[2]), 2),
+                        "low": round(float(r[3]), 2),
+                        "volume": int(float(r[5])) if r[5] else 0,
+                        "amount": float(r[6]) if r[6] else 0,
+                        "change_pct": round(float(r[7]), 2) if r[7] else 0,
+                    }
+                    db.execute(
+                        "INSERT OR REPLACE INTO kline_cache (symbol, date, data) VALUES (?,?,?)",
+                        (symbol, d, json.dumps(kline, ensure_ascii=False))
+                    )
+                except (ValueError, IndexError):
+                    continue
+            db.commit()
+        except Exception:
+            pass
+        db.close()
 
     def get_stock_list(self) -> List[Dict]:
         """获取可交易股票列表 - 沪深300成分股"""
@@ -55,6 +121,7 @@ class StockDataService:
                     return json.load(f)
 
         try:
+            self._bs_login()
             rs = bs.query_hs300_stocks()
             stocks = []
             while rs.error_code == '0' and rs.next():
@@ -137,6 +204,7 @@ class StockDataService:
             end = end_dt.strftime("%Y-%m-%d")
 
             bscode = _to_baostock_code(symbol)
+            self._bs_login()
             rs = bs.query_history_k_data_plus(
                 bscode,
                 "date,open,high,low,close,volume,amount,pctChg",
@@ -209,6 +277,7 @@ class StockDataService:
             }
 
         try:
+            self._bs_login()
             rs = bs.query_history_k_data_plus(
                 "sh.000001",
                 "date,open,high,low,close,volume",
@@ -281,6 +350,7 @@ class StockDataService:
 
         try:
             rs = bs.query_trade_dates(start_date="2010-01-01", end_date="2025-12-31")
+            self._bs_login()
             dates = []
             while rs.error_code == '0' and rs.next():
                 row = rs.get_row_data()

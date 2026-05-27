@@ -30,6 +30,8 @@ class GameEngine:
         )
         conn.commit()
         conn.close()
+        # 后台预加载热门股票数据
+        self.stock_service.preload_stocks(start_date, end_date)
         return game_id
 
     def get_status(self, game_id: str) -> dict:
