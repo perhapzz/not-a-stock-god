@@ -1,25 +1,32 @@
-const app = getApp();
+const { request } = require('../../utils/request');
 
 Page({
   data: {
     rankList: [],
-    loading: false
+    loading: false,
   },
 
   onLoad() {
     this.fetchRank();
   },
 
+  onPullDownRefresh() {
+    this.fetchRank();
+  },
+
   fetchRank() {
     this.setData({ loading: true });
-    wx.request({
-      url: `${app.globalData.baseUrl}/rank`,
-      success: (res) => {
-        this.setData({ rankList: res.data.ranks || [] });
-      },
-      complete: () => {
+    request({ url: '/rank' })
+      .then((res) => {
+        this.setData({ rankList: res.ranks || [] });
+      })
+      .finally(() => {
         this.setData({ loading: false });
-      }
-    });
-  }
+        wx.stopPullDownRefresh();
+      });
+  },
+
+  goHome() {
+    wx.reLaunch({ url: '/pages/index/index' });
+  },
 });

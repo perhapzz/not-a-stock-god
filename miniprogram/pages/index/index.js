@@ -1,30 +1,14 @@
-const app = getApp();
+const { request } = require('../../utils/request');
 
 Page({
   data: {
     selectedDate: '',
     datePickerVisible: false,
     duration: '1month',
-    stocks: [],
-    loading: false
+    loading: false,
   },
 
-  onLoad() {
-    this.fetchStocks();
-  },
-
-  fetchStocks() {
-    this.setData({ loading: true });
-    wx.request({
-      url: `${app.globalData.baseUrl}/market/stocks`,
-      success: (res) => {
-        this.setData({ stocks: res.data.stocks || [] });
-      },
-      complete: () => {
-        this.setData({ loading: false });
-      }
-    });
-  },
+  onLoad() {},
 
   onDatePickerShow() {
     this.setData({ datePickerVisible: true });
@@ -33,7 +17,7 @@ Page({
   onDateConfirm(e) {
     this.setData({
       selectedDate: e.detail.value,
-      datePickerVisible: false
+      datePickerVisible: false,
     });
   },
 
@@ -51,23 +35,31 @@ Page({
       return;
     }
 
-    wx.request({
-      url: `${app.globalData.baseUrl}/game/start`,
+    this.setData({ loading: true });
+    request({
+      url: '/game/start',
       method: 'POST',
       data: {
         start_date: this.data.selectedDate,
-        duration: this.data.duration
+        duration: this.data.duration,
       },
-      success: (res) => {
-        if (res.data.game_id) {
+    })
+      .then((res) => {
+        if (res.game_id) {
           wx.navigateTo({
-            url: `/pages/trading/trading?game_id=${res.data.game_id}`
+            url: `/pages/trading/trading?game_id=${res.game_id}`,
           });
         }
-      },
-      fail: () => {
+      })
+      .catch(() => {
         wx.showToast({ title: '开始游戏失败', icon: 'none' });
-      }
-    });
-  }
+      })
+      .finally(() => {
+        this.setData({ loading: false });
+      });
+  },
+
+  goRank() {
+    wx.navigateTo({ url: '/pages/rank/rank' });
+  },
 });

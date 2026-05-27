@@ -1,52 +1,106 @@
 <view class="container">
+  <!-- Header -->
   <view class="header">
     <view class="date-display">📅 {{currentDate}}</view>
-    <view class="cash-info">现金: ¥{{cash}} | 总资产: ¥{{totalAssets}}</view>
-  </view>
-
-  <view class="card" wx:if="{{todayKline.symbol}}">
-    <view class="kline-info">
-      <view class="stock-name">{{todayKline.name}} ({{todayKline.symbol}})</view>
-      <view class="price-row">
-        <text>开: {{todayKline.open}}</text>
-        <text>高: {{todayKline.high}}</text>
-        <text>低: {{todayKline.low}}</text>
-        <text>收: {{todayKline.close}}</text>
+    <view class="assets-row">
+      <view class="asset-item">
+        <text class="asset-label">现金</text>
+        <text class="asset-value">¥{{cash}}</text>
       </view>
-      <view class="volume">成交量: {{todayKline.volume}}</view>
+      <view class="asset-item">
+        <text class="asset-label">总资产</text>
+        <text class="asset-value">¥{{totalAssets}}</text>
+      </view>
+      <view class="asset-item">
+        <text class="asset-label">收益率</text>
+        <text class="asset-value {{profitRate >= 0 ? 'profit' : 'loss'}}">{{profitRate}}%</text>
+      </view>
     </view>
   </view>
 
+  <!-- K线信息 -->
+  <view class="card" wx:if="{{todayKline}}">
+    <view class="kline-header">
+      <text class="stock-name">{{todayKline.symbol}}</text>
+      <text class="change-pct {{todayKline.change_pct >= 0 ? 'profit' : 'loss'}}">{{todayKline.change_pct}}%</text>
+    </view>
+    <view class="price-grid">
+      <view class="price-item"><text class="label">开</text><text>{{todayKline.open}}</text></view>
+      <view class="price-item"><text class="label">高</text><text class="profit">{{todayKline.high}}</text></view>
+      <view class="price-item"><text class="label">低</text><text class="loss">{{todayKline.low}}</text></view>
+      <view class="price-item"><text class="label">收</text><text>{{todayKline.close}}</text></view>
+    </view>
+    <view class="volume-info">成交量: {{todayKline.volume}} 手</view>
+  </view>
+
+  <!-- 股票搜索 -->
   <view class="card">
-    <view class="card-title">股票列表</view>
-    <scroll-view scroll-y style="max-height: 300rpx;">
-      <view wx:for="{{stocks}}" wx:key="symbol"
+    <view class="card-title">选择股票</view>
+    <t-input placeholder="搜索股票代码或名称" value="{{searchKeyword}}" bindchange="onSearchInput" bindtap="toggleStockList" />
+    <scroll-view scroll-y style="max-height: 400rpx;" wx:if="{{showStockList}}">
+      <view wx:if="{{filteredStocks.length === 0}}" class="empty-tip">暂无匹配股票</view>
+      <view wx:for="{{filteredStocks}}" wx:key="symbol"
         class="stock-item {{selectedStock === item.symbol ? 'selected' : ''}}"
-        data-symbol="{{item.symbol}}" bindtap="onStockSelect">
-        {{item.name}} ({{item.symbol}})
+        data-symbol="{{item.symbol}}" data-name="{{item.name}}" bindtap="onStockSelect">
+        <text class="stock-name-text">{{item.name}}</text>
+        <text class="stock-code">{{item.symbol}}</text>
       </view>
     </scroll-view>
   </view>
 
+  <!-- 交易操作 -->
   <view class="card">
     <view class="card-title">交易操作</view>
-    <t-input label="数量(股)" type="number" placeholder="100的整数倍" bindchange="onAmountInput" />
+    <t-input label="数量(股)" type="number" placeholder="100的整数倍" value="{{tradeAmount}}" bindchange="onAmountInput" />
+    <view class="quick-amounts">
+      <t-tag theme="primary" variant="light" data-pct="{{0.25}}" bindtap="quickAmount">1/4仓</t-tag>
+      <t-tag theme="primary" variant="light" data-pct="{{0.5}}" bindtap="quickAmount">半仓</t-tag>
+      <t-tag theme="primary" variant="light" data-pct="{{1}}" bindtap="quickAmount">全仓</t-tag>
+    </view>
     <view class="trade-buttons">
-      <t-button theme="danger" size="small" bindtap="buy">买入</t-button>
-      <t-button theme="success" size="small" bindtap="sell">卖出</t-button>
+      <t-button theme="danger" size="small" loading="{{tradingLoading}}" bindtap="buy">买入</t-button>
+      <t-button theme="success" size="small" loading="{{tradingLoading}}" bindtap="sell">卖出</t-button>
     </view>
   </view>
 
-  <view class="card" wx:if="{{positions.length > 0}}">
-    <view class="card-title">持仓</view>
-    <view wx:for="{{positions}}" wx:key="symbol" class="position-item">
-      <text>{{item.symbol}} {{item.name}}</text>
-      <text>{{item.amount}}股 | 成本: ¥{{item.cost_price}}</text>
+  <!-- 持仓 -->
+  <view class="card">
+    <view class="card-title">持仓 ({{positions.length}})</view>
+    <view wx:if="{{positions.length === 0}}" class="empty-tip">暂无持仓</view>
+    <view wx:for="{{positions}}" wx:key="symbol" class="position-item" data-symbol="{{item.symbol}}" data-name="{{item.name}}" bindtap="onStockSelect">
+      <view class="pos-left">
+        <text class="pos-name">{{item.name}}</text>
+        <text class="pos-detail">{{item.amount}}股 | 成本¥{{item.cost_price}}</text>
+      </view>
+      <view class="pos-right">
+        <text class="pos-value">¥{{item.market_value}}</text>
+        <text class="{{item.profit >= 0 ? 'profit' : 'loss'}}">{{item.profit >= 0 ? '+' : ''}}{{item.profit}}</text>
+      </view>
     </view>
   </view>
 
+  <!-- 操作按钮 -->
   <view class="action-area">
-    <t-button theme="primary" block bindtap="nextDay">下一个交易日 ➡️</t-button>
-    <t-button theme="light" size="small" bindtap="settle" style="margin-top: 20rpx;">提前结算</t-button>
+    <t-button theme="primary" block loading="{{loading}}" bindtap="nextDay">下一个交易日 ➡️</t-button>
+    <view class="secondary-actions">
+      <t-button theme="light" size="small" bindtap="fastForward">⏩ 快进到结束</t-button>
+      <t-button theme="light" size="small" bindtap="showTrades">📋 交易记录</t-button>
+      <t-button theme="light" size="small" bindtap="settle">🏁 提前结算</t-button>
+    </view>
+  </view>
+
+  <!-- 交易记录弹窗 -->
+  <view class="trade-history-mask" wx:if="{{showTradeHistory}}" bindtap="hideTradeHistory">
+    <view class="trade-history-panel" catchtap="">
+      <view class="card-title">交易记录</view>
+      <scroll-view scroll-y style="max-height: 600rpx;">
+        <view wx:if="{{trades.length === 0}}" class="empty-tip">暂无交易记录</view>
+        <view wx:for="{{trades}}" wx:key="index" class="trade-item">
+          <text class="{{item.action === 'buy' ? 'trade-buy' : 'trade-sell'}}">{{item.action === 'buy' ? '买入' : '卖出'}}</text>
+          <text>{{item.symbol}} {{item.amount}}股 @¥{{item.price}}</text>
+          <text class="trade-date">{{item.trade_date}}</text>
+        </view>
+      </scroll-view>
+    </view>
   </view>
 </view>

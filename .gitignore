@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+backend/data/
+data/
+*.db
+node_modules/
+miniprogram_npm/

@@ -1,6 +1,32 @@
-.result-card {
-  text-align: center;
+.container {
+  padding: 30rpx;
+  min-height: 100vh;
+  background: #f5f5f5;
 }
+
+.title {
+  font-size: 48rpx;
+  font-weight: bold;
+  text-align: center;
+  color: #1a1a2e;
+  margin: 40rpx 0;
+}
+
+.card {
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+.card-title {
+  font-size: 28rpx;
+  font-weight: bold;
+  margin-bottom: 16rpx;
+}
+
+.result-card { text-align: center; }
 
 .result-label {
   font-size: 28rpx;
@@ -33,13 +59,83 @@
   margin-top: 10rpx;
 }
 
-.rank-display {
-  font-size: 32rpx;
-  color: #f39c12;
+.profit { color: #e74c3c; }
+.loss { color: #27ae60; }
+
+.benchmark-section {
+  margin-top: 30rpx;
+  padding-top: 30rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.benchmark-title {
+  font-size: 28rpx;
   font-weight: bold;
+  margin-bottom: 20rpx;
+}
+
+.benchmark-row {
+  display: flex;
+  justify-content: space-around;
+}
+
+.benchmark-item {
+  text-align: center;
+}
+
+.benchmark-item .label {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+}
+
+.benchmark-item .value {
+  display: block;
+  font-size: 30rpx;
+  font-weight: bold;
+  margin-top: 8rpx;
+}
+
+.game-info {
   margin-top: 20rpx;
+  font-size: 24rpx;
+  color: #999;
 }
 
 .action-area {
-  margin-top: 60rpx;
+  margin-top: 40rpx;
+}
+
+.share-btn {
+  margin-top: 20rpx;
+  background: #f0f0f0;
+  border-radius: 12rpx;
+  font-size: 28rpx;
+  line-height: 80rpx;
+}
+
+.trade-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12rpx 0;
+  border-bottom: 1rpx solid #f5f5f5;
+  font-size: 24rpx;
+}
+
+.trade-buy { color: #e74c3c; font-weight: bold; }
+.trade-sell { color: #27ae60; font-weight: bold; }
+.trade-date { color: #999; }
+
+.empty-tip {
+  text-align: center;
+  color: #999;
+  padding: 30rpx;
+}
+
+.disclaimer {
+  margin-top: 40rpx;
+  text-align: center;
+  font-size: 22rpx;
+  color: #999;
 }

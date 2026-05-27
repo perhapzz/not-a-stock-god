@@ -1,17 +1,48 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 from typing import Optional, List
 
 
 class GameStartRequest(BaseModel):
     start_date: str  # YYYY-MM-DD
-    duration: str = "1month"  # 1month or 1year
+    duration: str = "1month"  # 1month, 3month, or 1year
     user_name: Optional[str] = None
+
+    @field_validator("duration")
+    @classmethod
+    def validate_duration(cls, v):
+        if v not in ("1month", "3month", "1year"):
+            raise ValueError("duration must be 1month, 3month, or 1year")
+        return v
+
+    @field_validator("start_date")
+    @classmethod
+    def validate_date(cls, v):
+        from datetime import datetime
+        try:
+            datetime.strptime(v, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("start_date must be YYYY-MM-DD format")
+        return v
 
 
 class TradeRequest(BaseModel):
     symbol: str
     action: str  # buy or sell
     amount: int  # must be multiple of 100
+
+    @field_validator("action")
+    @classmethod
+    def validate_action(cls, v):
+        if v not in ("buy", "sell"):
+            raise ValueError("action must be buy or sell")
+        return v
+
+    @field_validator("amount")
+    @classmethod
+    def validate_amount(cls, v):
+        if v <= 0 or v % 100 != 0:
+            raise ValueError("amount must be a positive multiple of 100")
+        return v
 
 
 class PositionInfo(BaseModel):

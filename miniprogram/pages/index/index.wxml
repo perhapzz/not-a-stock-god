@@ -20,6 +20,7 @@
     <view class="card-title">游戏时长</view>
     <view class="duration-options">
       <t-button theme="{{duration === '1month' ? 'primary' : 'default'}}" size="small" data-duration="1month" bindtap="onDurationChange">1个月</t-button>
+      <t-button theme="{{duration === '3month' ? 'primary' : 'default'}}" size="small" data-duration="3month" bindtap="onDurationChange">3个月</t-button>
       <t-button theme="{{duration === '1year' ? 'primary' : 'default'}}" size="small" data-duration="1year" bindtap="onDurationChange">1年</t-button>
     </view>
   </view>
@@ -30,12 +31,12 @@
   </view>
 
   <view class="action-area">
-    <t-button theme="primary" size="large" block bindtap="startGame">开始穿越</t-button>
+    <t-button theme="primary" size="large" block loading="{{loading}}" bindtap="startGame">开始穿越</t-button>
   </view>
 
   <view class="nav-links">
     <t-button theme="light" size="small" bindtap="goRank">🏆 排行榜</t-button>
   </view>
 
-  <view class="disclaimer">⚠️ 本小程序仅为历史数据模拟游戏，不构成任何投资建议</view>
+  <view class="disclaimer">⚠️ 免责声明：本小程序仅为历史数据模拟游戏，所有交易均为虚拟操作，不构成任何投资建议。股市有风险，入市需谨慎。</view>
 </view>

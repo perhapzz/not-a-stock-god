@@ -1,5 +1,5 @@
-from fastapi import APIRouter
-from models.schemas import GameStartRequest, TradeRequest, GameStatus, TradeResponse
+from fastapi import APIRouter, Request
+from models.schemas import GameStartRequest, TradeRequest
 from services.game_engine import GameEngine
 
 router = APIRouter()
@@ -17,6 +17,11 @@ async def get_status(game_id: str):
     return engine.get_status(game_id)
 
 
+@router.get("/{game_id}/trades")
+async def get_trades(game_id: str):
+    return {"trades": engine.get_trades(game_id)}
+
+
 @router.post("/{game_id}/trade")
 async def trade(game_id: str, req: TradeRequest):
     return engine.trade(game_id, req.symbol, req.action, req.amount)
@@ -25,6 +30,11 @@ async def trade(game_id: str, req: TradeRequest):
 @router.post("/{game_id}/next-day")
 async def next_day(game_id: str):
     return engine.next_day(game_id)
+
+
+@router.post("/{game_id}/fast-forward")
+async def fast_forward(game_id: str):
+    return engine.fast_forward(game_id)
 
 
 @router.post("/{game_id}/settle")

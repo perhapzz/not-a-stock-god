@@ -1,28 +1,63 @@
 <view class="container">
   <view class="title">🏁 游戏结算</view>
 
-  <view class="card result-card">
+  <view class="card result-card" wx:if="{{!loading}}">
     <view class="result-label">最终资产</view>
     <view class="result-value">¥ {{totalAssets}}</view>
 
     <view class="result-row">
       <view class="result-item">
         <text class="label">收益</text>
-        <text class="value {{profit >= 0 ? 'profit' : 'loss'}}">¥ {{profit}}</text>
+        <text class="value {{profit >= 0 ? 'profit' : 'loss'}}">¥{{profit}}</text>
       </view>
       <view class="result-item">
         <text class="label">收益率</text>
-        <text class="value {{profit >= 0 ? 'profit' : 'loss'}}">{{profitRate}}%</text>
+        <text class="value {{profitRate >= 0 ? 'profit' : 'loss'}}">{{profitRate}}%</text>
       </view>
     </view>
 
-    <view class="rank-display">
-      <text>排名: 第 {{rank}} 名</text>
+    <view class="benchmark-section">
+      <view class="benchmark-title">📊 对比大盘（上证指数）</view>
+      <view class="benchmark-row">
+        <view class="benchmark-item">
+          <text class="label">你的收益</text>
+          <text class="value {{profitRate >= 0 ? 'profit' : 'loss'}}">{{profitRate}}%</text>
+        </view>
+        <view class="benchmark-item">
+          <text class="label">大盘收益</text>
+          <text class="value">{{benchmarkRate}}%</text>
+        </view>
+        <view class="benchmark-item">
+          <text class="label">{{profitRate > benchmarkRate ? '跑赢' : '跑输'}}大盘</text>
+          <text class="value {{profitRate > benchmarkRate ? 'profit' : 'loss'}}">{{profitRate - benchmarkRate > 0 ? '+' : ''}}{{profitRate - benchmarkRate}}%</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="game-info">
+      <text>{{startDate}} ~ {{endDate}} ({{duration === '1month' ? '1个月' : duration === '3month' ? '3个月' : '1年'}})</text>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{loading}}">
+    <view class="empty-tip">加载中...</view>
+  </view>
+
+  <!-- 交易记录摘要 -->
+  <view class="card" wx:if="{{trades.length > 0}}">
+    <view class="card-title">交易记录 (最近{{trades.length}}条)</view>
+    <view wx:for="{{trades}}" wx:key="index" class="trade-item">
+      <text class="{{item.action === 'buy' ? 'trade-buy' : 'trade-sell'}}">{{item.action === 'buy' ? '买' : '卖'}}</text>
+      <text>{{item.symbol}} {{item.amount}}股 @¥{{item.price}}</text>
+      <text class="trade-date">{{item.trade_date}}</text>
     </view>
   </view>
 
   <view class="action-area">
     <t-button theme="primary" block bindtap="goHome">再来一局</t-button>
     <t-button theme="light" block bindtap="goRank" style="margin-top: 20rpx;">查看排行榜</t-button>
+    <button open-type="share" class="share-btn">分享成绩</button>
   </view>
+
+  <view class="disclaimer">⚠️ 本小程序仅为历史数据模拟游戏，不构成任何投资建议</view>
 </view>

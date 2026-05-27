@@ -1,9 +1,11 @@
+const config = require('./utils/config');
+
 App({
   globalData: {
-    baseUrl: 'https://your-backend-domain.com',
-    initialCash: 1000000
+    baseUrl: config.baseUrl,
+    initialCash: 1000000,
   },
   onLaunch() {
     console.log('我不是股神 - 启动');
-  }
+  },
 });
