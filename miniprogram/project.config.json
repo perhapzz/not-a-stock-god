@@ -1,0 +1,18 @@
+{
+  "miniprogramRoot": "./",
+  "projectname": "not-a-stock-god",
+  "appid": "wx0000000000000000",
+  "setting": {
+    "urlCheck": false,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "preloadBackgroundData": false,
+    "minified": true,
+    "newFeature": true,
+    "nodeModules": true,
+    "packNpmManually": false,
+    "packNpmRelationList": []
+  },
+  "compileType": "miniprogram"
+}

@@ -1,0 +1,53 @@
+.rank-list {
+  margin-top: 20rpx;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  background: #fff;
+  padding: 24rpx 30rpx;
+  border-radius: 12rpx;
+  margin-bottom: 12rpx;
+}
+
+.rank-num {
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: 50%;
+  background: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 28rpx;
+}
+
+.rank-info {
+  flex: 1;
+  margin-left: 20rpx;
+}
+
+.rank-user {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+}
+
+.rank-date {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 6rpx;
+}
+
+.rank-profit {
+  font-size: 32rpx;
+  font-weight: bold;
+}
+
+.empty {
+  text-align: center;
+  color: #999;
+  padding: 40rpx;
+}

@@ -1,0 +1,41 @@
+<view class="container">
+  <view class="title">🕐 我不是股神</view>
+  <view class="subtitle">穿越时空，用100万挑战A股历史</view>
+
+  <view class="card">
+    <view class="card-title">选择穿越日期</view>
+    <t-cell title="穿越到" note="{{selectedDate || '请选择日期'}}" arrow bindtap="onDatePickerShow" />
+    <t-date-time-picker
+      visible="{{datePickerVisible}}"
+      mode="date"
+      title="选择穿越日期"
+      start="2010-01-01"
+      end="2024-12-31"
+      bindconfirm="onDateConfirm"
+      bindcancel="onDateCancel"
+    />
+  </view>
+
+  <view class="card">
+    <view class="card-title">游戏时长</view>
+    <view class="duration-options">
+      <t-button theme="{{duration === '1month' ? 'primary' : 'default'}}" size="small" data-duration="1month" bindtap="onDurationChange">1个月</t-button>
+      <t-button theme="{{duration === '1year' ? 'primary' : 'default'}}" size="small" data-duration="1year" bindtap="onDurationChange">1年</t-button>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">初始资金</view>
+    <view class="cash-display">¥ 1,000,000</view>
+  </view>
+
+  <view class="action-area">
+    <t-button theme="primary" size="large" block bindtap="startGame">开始穿越</t-button>
+  </view>
+
+  <view class="nav-links">
+    <t-button theme="light" size="small" bindtap="goRank">🏆 排行榜</t-button>
+  </view>
+
+  <view class="disclaimer">⚠️ 本小程序仅为历史数据模拟游戏，不构成任何投资建议</view>
+</view>

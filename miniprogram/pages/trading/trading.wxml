@@ -1,0 +1,52 @@
+<view class="container">
+  <view class="header">
+    <view class="date-display">📅 {{currentDate}}</view>
+    <view class="cash-info">现金: ¥{{cash}} | 总资产: ¥{{totalAssets}}</view>
+  </view>
+
+  <view class="card" wx:if="{{todayKline.symbol}}">
+    <view class="kline-info">
+      <view class="stock-name">{{todayKline.name}} ({{todayKline.symbol}})</view>
+      <view class="price-row">
+        <text>开: {{todayKline.open}}</text>
+        <text>高: {{todayKline.high}}</text>
+        <text>低: {{todayKline.low}}</text>
+        <text>收: {{todayKline.close}}</text>
+      </view>
+      <view class="volume">成交量: {{todayKline.volume}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">股票列表</view>
+    <scroll-view scroll-y style="max-height: 300rpx;">
+      <view wx:for="{{stocks}}" wx:key="symbol"
+        class="stock-item {{selectedStock === item.symbol ? 'selected' : ''}}"
+        data-symbol="{{item.symbol}}" bindtap="onStockSelect">
+        {{item.name}} ({{item.symbol}})
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">交易操作</view>
+    <t-input label="数量(股)" type="number" placeholder="100的整数倍" bindchange="onAmountInput" />
+    <view class="trade-buttons">
+      <t-button theme="danger" size="small" bindtap="buy">买入</t-button>
+      <t-button theme="success" size="small" bindtap="sell">卖出</t-button>
+    </view>
+  </view>
+
+  <view class="card" wx:if="{{positions.length > 0}}">
+    <view class="card-title">持仓</view>
+    <view wx:for="{{positions}}" wx:key="symbol" class="position-item">
+      <text>{{item.symbol}} {{item.name}}</text>
+      <text>{{item.amount}}股 | 成本: ¥{{item.cost_price}}</text>
+    </view>
+  </view>
+
+  <view class="action-area">
+    <t-button theme="primary" block bindtap="nextDay">下一个交易日 ➡️</t-button>
+    <t-button theme="light" size="small" bindtap="settle" style="margin-top: 20rpx;">提前结算</t-button>
+  </view>
+</view>

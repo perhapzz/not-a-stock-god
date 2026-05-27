@@ -1,0 +1,20 @@
+<view class="container">
+  <view class="title">🏆 排行榜</view>
+
+  <view class="card" wx:if="{{rankList.length === 0 && !loading}}">
+    <view class="empty">暂无记录</view>
+  </view>
+
+  <view class="rank-list">
+    <view wx:for="{{rankList}}" wx:key="index" class="rank-item">
+      <view class="rank-num">{{index + 1}}</view>
+      <view class="rank-info">
+        <text class="rank-user">{{item.user_name || '匿名玩家'}}</text>
+        <text class="rank-date">{{item.start_date}} ({{item.duration}})</text>
+      </view>
+      <view class="rank-profit {{item.profit_rate >= 0 ? 'profit' : 'loss'}}">
+        {{item.profit_rate}}%
+      </view>
+    </view>
+  </view>
+</view>
