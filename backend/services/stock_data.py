@@ -69,10 +69,39 @@ class StockDataService:
             ]
 
     def search_stocks(self, keyword: str) -> List[Dict]:
-        """搜索股票"""
+        """搜索股票 - 支持代码、名称、拼音首字母模糊搜索"""
+        from pypinyin import lazy_pinyin, Style
         stocks = self.get_stock_list()
-        keyword = keyword.lower()
-        return [s for s in stocks if keyword in s["symbol"] or keyword in s["name"].lower()][:20]
+        keyword = keyword.lower().strip()
+        if not keyword:
+            return stocks[:20]
+        
+        results = []
+        for s in stocks:
+            symbol = s["symbol"]
+            name = s["name"]
+            # 拼音首字母
+            try:
+                initials = ''.join(lazy_pinyin(name, style=Style.FIRST_LETTER))
+            except:
+                initials = ''
+            # 全拼
+            try:
+                full_pinyin = ''.join(lazy_pinyin(name))
+            except:
+                full_pinyin = ''
+            
+            # 匹配：代码包含、名称包含、拼音首字母包含、全拼包含
+            if (keyword in symbol or 
+                keyword in name.lower() or 
+                keyword in initials.lower() or
+                keyword in full_pinyin.lower()):
+                results.append(s)
+            
+            if len(results) >= 20:
+                break
+        
+        return results
 
     def get_kline(self, symbol: str, date: str) -> Dict:
         """获取某只股票某日的K线数据"""
