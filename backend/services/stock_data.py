@@ -90,7 +90,7 @@ class StockDataService:
         """搜索股票 - 支持代码、名称、拼音首字母模糊搜索"""
         from pypinyin import lazy_pinyin, Style
         stocks = self.get_stock_list()
-        keyword = keyword.lower().strip()
+        keyword = keyword.lower().replace(" ", "").strip()
         if not keyword:
             return stocks[:20]
 
