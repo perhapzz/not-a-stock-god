@@ -52,14 +52,19 @@ export default function GamePage() {
   const [showTrades, setShowTrades] = useState(false)
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
-  const [autoPlay, setAutoPlay] = useState(false)
-  const autoPlayRef = useRef(false)
+  const [autoPlay, setAutoPlay] = useState(true)
+  const [speed, setSpeed] = useState(1) // 1=1x, 2=2x, 3=3x
+  const autoPlayRef = useRef(true)
+  const speedRef = useRef(1)
 
   useEffect(() => { autoPlayRef.current = autoPlay }, [autoPlay])
+  useEffect(() => { speedRef.current = speed }, [speed])
 
   useEffect(() => {
     if (!autoPlay) return
-    const timer = setInterval(async () => {
+    const getInterval = () => Math.round(3000 / speedRef.current)
+    let timer: NodeJS.Timeout
+    const tick = async () => {
       if (!autoPlayRef.current) return
       try {
         const data = await api(`/game/${id}/next-day`, { method: 'POST' })
@@ -67,8 +72,10 @@ export default function GamePage() {
         const st = await api(`/game/${id}/status`)
         setStatus(st)
       } catch { setAutoPlay(false) }
-    }, 3000)
-    return () => clearInterval(timer)
+      if (autoPlayRef.current) timer = setTimeout(tick, getInterval())
+    }
+    timer = setTimeout(tick, getInterval())
+    return () => clearTimeout(timer)
   }, [autoPlay, id, router])
 
   const fetchStatus = useCallback(async () => {
@@ -305,17 +312,17 @@ export default function GamePage() {
 
       {/* Actions */}
       <div className="flex gap-3">
-        <button onClick={handleNextDay} disabled={loading || autoPlay}
-          className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50">
-          下一天 →
-        </button>
         <button onClick={() => setAutoPlay(!autoPlay)}
-          className={`py-3 px-4 rounded-xl font-medium ${autoPlay ? 'bg-yellow-500 text-white hover:bg-yellow-600' : 'bg-purple-600 text-white hover:bg-purple-700'}`}>
-          {autoPlay ? '⏸ 暂停' : '▶ 自动'}
+          className={`flex-1 py-3 rounded-xl font-medium ${autoPlay ? 'bg-yellow-500 text-white hover:bg-yellow-600' : 'bg-purple-600 text-white hover:bg-purple-700'}`}>
+          {autoPlay ? '⏸ 暂停' : '▶ 播放'}
         </button>
-        <button onClick={handleFastForward} disabled={loading || autoPlay}
+        <button onClick={() => setSpeed(speed >= 3 ? 1 : speed + 1)}
+          className="py-3 px-5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700">
+          x{speed}
+        </button>
+        <button onClick={handleFastForward} disabled={loading}
           className="py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 disabled:opacity-50">
-          ⏭ 快进
+          ⏭ 跳到结束
         </button>
       </div>
     </div>
