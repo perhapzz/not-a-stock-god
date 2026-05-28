@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { api } from '@/lib/api'
 
@@ -52,6 +52,24 @@ export default function GamePage() {
   const [showTrades, setShowTrades] = useState(false)
   const [msg, setMsg] = useState('')
   const [loading, setLoading] = useState(false)
+  const [autoPlay, setAutoPlay] = useState(false)
+  const autoPlayRef = useRef(false)
+
+  useEffect(() => { autoPlayRef.current = autoPlay }, [autoPlay])
+
+  useEffect(() => {
+    if (!autoPlay) return
+    const timer = setInterval(async () => {
+      if (!autoPlayRef.current) return
+      try {
+        const data = await api(`/game/${id}/next-day`, { method: 'POST' })
+        if (data.game_over) { setAutoPlay(false); router.push(`/result/${id}`); return }
+        const st = await api(`/game/${id}/status`)
+        setStatus(st)
+      } catch { setAutoPlay(false) }
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [autoPlay, id, router])
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -287,11 +305,15 @@ export default function GamePage() {
 
       {/* Actions */}
       <div className="flex gap-3">
-        <button onClick={handleNextDay} disabled={loading}
+        <button onClick={handleNextDay} disabled={loading || autoPlay}
           className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50">
           下一天 →
         </button>
-        <button onClick={handleFastForward} disabled={loading}
+        <button onClick={() => setAutoPlay(!autoPlay)}
+          className={`py-3 px-4 rounded-xl font-medium ${autoPlay ? 'bg-yellow-500 text-white hover:bg-yellow-600' : 'bg-purple-600 text-white hover:bg-purple-700'}`}>
+          {autoPlay ? '⏸ 暂停' : '▶ 自动'}
+        </button>
+        <button onClick={handleFastForward} disabled={loading || autoPlay}
           className="py-3 px-4 bg-gray-200 text-gray-700 rounded-xl font-medium hover:bg-gray-300 disabled:opacity-50">
           ⏭ 快进
         </button>
