@@ -183,6 +183,30 @@ class GameEngine:
 
         return {"success": False, "message": "无效操作"}
 
+    def _liquidate_positions(self, game_id: str):
+        """强制清仓所有持仓，按当天收盘价卖出"""
+        conn = get_db()
+        game = conn.execute("SELECT * FROM games WHERE id = ?", (game_id,)).fetchone()
+        if not game:
+            conn.close()
+            return
+        positions = conn.execute("SELECT * FROM positions WHERE game_id = ?", (game_id,)).fetchall()
+        cash = game["cash"]
+        for p in positions:
+            price = self.stock_service.get_close_price(p["symbol"], game["current_date"])
+            if not price:
+                price = p["cost_price"]
+            proceeds = price * p["amount"]
+            cash += proceeds
+            conn.execute(
+                "INSERT INTO trades (game_id, symbol, action, amount, price, trade_date) VALUES (?, ?, ?, ?, ?, ?)",
+                (game_id, p["symbol"], "sell", p["amount"], price, game["current_date"])
+            )
+        conn.execute("DELETE FROM positions WHERE game_id = ?", (game_id,))
+        conn.execute("UPDATE games SET cash = ? WHERE id = ?", (round(cash, 2), game_id))
+        conn.commit()
+        conn.close()
+
     def next_day(self, game_id: str) -> dict:
         conn = get_db()
         game = conn.execute("SELECT * FROM games WHERE id = ?", (game_id,)).fetchone()
@@ -193,6 +217,7 @@ class GameEngine:
         next_date = self.stock_service.get_next_trading_day(game["current_date"])
 
         if not next_date or next_date > game["end_date"]:
+            self._liquidate_positions(game_id)
             conn.execute("UPDATE games SET status = 'finished' WHERE id = ?", (game_id,))
             conn.commit()
             conn.close()
@@ -227,6 +252,7 @@ class GameEngine:
         conn.execute("UPDATE games SET current_date = ?, status = 'finished' WHERE id = ?", (current, game_id))
         conn.commit()
         conn.close()
+        self._liquidate_positions(game_id)
         self._save_ranking(game_id)
         return {"game_over": True, "message": f"快进完成，共经过{days_advanced}个交易日", "final_date": current}
 
